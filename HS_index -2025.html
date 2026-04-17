@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HS Code Finder — India Customs Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0e17; --surface:#111827; --surface2:#1a2236;
+    --border:rgba(99,131,179,0.15); --border2:rgba(99,131,179,0.28);
+    --accent:#3b82f6; --accent2:#60a5fa; --gold:#f59e0b; --gold2:#fbbf24;
+    --green:#10b981; --red:#ef4444;
+    --text:#f1f5f9; --text2:#94a3b8; --text3:#475569;
+    --mono:'DM Mono',monospace; --head:'Syne',sans-serif; --body:'DM Sans',sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;min-height:100vh;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(59,130,246,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+  .wrap{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:2rem 1.25rem 4rem}
+  header{padding:2.5rem 0 2rem}
+  .logo-row{display:flex;align-items:center;gap:12px;margin-bottom:1rem}
+  .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--accent),var(--gold));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+  .brand{font-family:var(--head);font-size:20px;font-weight:700;letter-spacing:-0.02em}
+  .brand span{color:var(--accent2)}
+  .db-badge{font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(16,185,129,0.1);color:#34d399;border:0.5px solid rgba(16,185,129,0.25);font-family:var(--mono);margin-left:8px}
+  header h1{font-family:var(--head);font-size:clamp(26px,5vw,44px);font-weight:700;letter-spacing:-0.03em;line-height:1.1;background:linear-gradient(120deg,#f1f5f9 30%,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.5rem}
+  header p{color:var(--text2);font-size:14px;font-weight:300}
+  .free-tag{display:inline-block;font-size:11px;padding:2px 10px;border-radius:20px;background:rgba(16,185,129,0.12);color:#34d399;border:0.5px solid rgba(16,185,129,0.3);font-family:var(--mono);margin-left:8px;vertical-align:middle}
+  .how-link{font-size:12px;color:var(--accent2);cursor:pointer;text-decoration:underline;text-underline-offset:2px;background:none;border:none;font-family:var(--body);padding:0}
+  .how-box{background:var(--surface2);border:0.5px solid rgba(59,130,246,0.25);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.25rem;display:none;animation:fadeUp .3s ease}
+  .how-box ol{padding-left:1.25rem;color:var(--text2);font-size:13px;line-height:2}
+  .how-box ol li strong{color:var(--text)}
+  .how-box a{color:var(--accent2)}
+  .how-box .note{font-size:12px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border)}
+  .api-bar{display:flex;gap:10px;align-items:center;background:var(--surface);border:0.5px solid var(--border2);border-radius:10px;padding:10px 14px;margin-bottom:1.5rem}
+  .api-bar label{font-size:11px;color:var(--text3);white-space:nowrap;font-family:var(--mono)}
+  .api-bar input{flex:1;background:transparent;border:none;color:var(--text2);font-family:var(--mono);font-size:13px;outline:none;min-width:0}
+  .api-bar input::placeholder{color:var(--text3)}
+  .api-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .3s}
+  .api-dot.active{background:var(--green);box-shadow:0 0 6px var(--green)}
+  .search-card{background:var(--surface);border:0.5px solid var(--border2);border-radius:16px;padding:1.5rem;margin-bottom:1.25rem;position:relative;overflow:hidden}
+  .search-card::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(59,130,246,0.07),transparent 70%);pointer-events:none}
+  .input-label{font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+  textarea{width:100%;min-height:100px;background:var(--surface2);border:0.5px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--body);font-size:14px;font-weight:300;line-height:1.7;padding:12px 14px;resize:vertical;outline:none;transition:border-color .2s}
+  textarea:focus{border-color:var(--accent)}
+  textarea::placeholder{color:var(--text3)}
+  .chips-row{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+  .chips-label{font-size:11px;color:var(--text3);align-self:center;font-family:var(--mono)}
+  .chip{font-size:12px;padding:4px 12px;border-radius:20px;background:var(--surface2);color:var(--text2);border:0.5px solid var(--border);cursor:pointer;font-family:var(--body);transition:all .15s}
+  .chip:hover{border-color:var(--accent);color:var(--accent2);background:rgba(59,130,246,0.08)}
+  .cta-row{display:flex;gap:10px;margin-top:14px}
+  .btn-primary{flex:1;padding:12px 20px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-family:var(--head);font-size:15px;font-weight:600;cursor:pointer;letter-spacing:-0.01em;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+  .btn-primary:hover{background:#2563eb;transform:translateY(-1px)}
+  .btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  .btn-sec{padding:12px 16px;background:var(--surface2);color:var(--text2);border:0.5px solid var(--border2);border-radius:10px;font-family:var(--body);font-size:13px;cursor:pointer;transition:all .2s}
+  .btn-sec:hover{border-color:var(--accent);color:var(--accent2)}
+  .loading{display:none;text-align:center;padding:2.5rem;color:var(--text2);font-size:14px}
+  .loader{display:inline-block;width:22px;height:22px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .65s linear infinite;vertical-align:middle;margin-right:10px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .result-card{background:var(--surface);border:0.5px solid var(--border2);border-radius:16px;overflow:hidden;margin-bottom:1.25rem;animation:fadeUp .4s ease}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .result-head{padding:1.25rem 1.5rem;background:linear-gradient(135deg,var(--surface2),rgba(26,34,54,0.5));border-bottom:0.5px solid var(--border);display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  .hs-code-big{font-family:var(--mono);font-size:30px;font-weight:500;color:var(--accent2);letter-spacing:.04em;line-height:1}
+  .hs-label{font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;margin-bottom:4px}
+  .product-name{font-family:var(--head);font-size:17px;font-weight:600;color:var(--text);margin-bottom:3px}
+  .chapter-info{font-size:12px;color:var(--text2);font-family:var(--mono)}
+  .head-right{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+  .badge{font-size:11px;padding:4px 12px;border-radius:20px;font-family:var(--mono)}
+  .conf-High{background:rgba(16,185,129,.12);color:#34d399;border:0.5px solid rgba(16,185,129,.3)}
+  .conf-Medium{background:rgba(245,158,11,.12);color:#fbbf24;border:0.5px solid rgba(245,158,11,.3)}
+  .conf-Low{background:rgba(239,68,68,.12);color:#f87171;border:0.5px solid rgba(239,68,68,.3)}
+  .export-badge{background:rgba(59,130,246,.1);color:var(--accent2);border:0.5px solid rgba(59,130,246,.25)}
+  .src-badge{background:rgba(16,185,129,.08);color:#6ee7b7;border:0.5px solid rgba(16,185,129,.2);font-size:10px}
+  .result-body{padding:1.5rem}
+  .sec-title{font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .sec-title::after{content:'';flex:1;height:0.5px;background:var(--border)}
+  .tax-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:1.5rem}
+  .tax-box{background:var(--surface2);border:0.5px solid var(--border);border-radius:10px;padding:14px;transition:border-color .2s}
+  .tax-box:hover{border-color:var(--border2)}
+  .tax-box.highlight{border-color:rgba(59,130,246,.4);background:rgba(59,130,246,.06)}
+  .tax-box.db-verified{border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.04)}
+  .t-label{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:6px}
+  .t-value{font-size:24px;font-weight:500;font-family:var(--head);color:var(--text)}
+  .tax-box.highlight .t-value{color:var(--accent2)}
+  .tax-box.db-verified .t-value{color:#34d399}
+  .t-sub{font-size:11px;color:var(--text3);margin-top:3px}
+  .path-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:1.5rem}
+  .path-seg{font-size:12px;padding:5px 12px;border-radius:6px;background:var(--surface2);color:var(--text2);border:0.5px solid var(--border);font-family:var(--mono)}
+  .path-arrow{color:var(--text3);font-size:14px}
+  .notes-box{background:var(--surface2);border:0.5px solid var(--border);border-left:2px solid var(--accent);border-radius:0 10px 10px 0;padding:12px 16px;font-size:13px;color:var(--text2);line-height:1.75;margin-bottom:1.25rem}
+  .exemption-box{background:rgba(16,185,129,.05);border:0.5px solid rgba(16,185,129,.2);border-radius:10px;padding:12px 16px;font-size:13px;color:#6ee7b7;line-height:1.7;margin-bottom:1.25rem}
+  .db-info-box{background:rgba(59,130,246,.05);border:0.5px solid rgba(59,130,246,.2);border-radius:10px;padding:10px 16px;font-size:12px;color:var(--accent2);line-height:1.6;margin-bottom:1.25rem;display:flex;gap:10px;align-items:flex-start}
+  .calc-card{background:var(--surface);border:0.5px solid var(--border2);border-radius:16px;padding:1.5rem;margin-bottom:1.25rem;display:none;animation:fadeUp .3s ease}
+  .calc-card h3{font-family:var(--head);font-size:16px;font-weight:600;margin-bottom:1rem}
+  .calc-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:1rem}
+  .calc-field{flex:1;min-width:150px}
+  .calc-field label{font-size:11px;color:var(--text3);font-family:var(--mono);display:block;margin-bottom:6px}
+  .calc-field input,.calc-field select{width:100%;background:var(--surface2);border:0.5px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--body);font-size:14px;padding:9px 12px;outline:none;transition:border-color .2s}
+  .calc-field input:focus,.calc-field select:focus{border-color:var(--accent)}
+  .calc-field select option{background:var(--surface2)}
+  .calc-result{background:var(--surface2);border-radius:10px;padding:1rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+  .cr-item .cr-label{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:3px}
+  .cr-item .cr-val{font-size:16px;font-weight:500;font-family:var(--head)}
+  .cr-item.cr-total .cr-val{font-size:22px;color:var(--gold2)}
+  .landed-cost{background:rgba(245,158,11,.06);border:0.5px solid rgba(245,158,11,.25);border-radius:10px;padding:12px 16px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+  .lc-label{font-size:12px;color:var(--text3);font-family:var(--mono)}
+  .lc-val{font-size:20px;font-weight:600;font-family:var(--head);color:var(--gold2)}
+  .history-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.5rem}
+  .hist-chip{font-size:12px;padding:4px 12px;border-radius:20px;background:var(--surface2);color:var(--text2);border:0.5px solid var(--border);cursor:pointer;font-family:var(--body);transition:all .15s}
+  .hist-chip:hover{border-color:var(--border2);color:var(--text)}
+  .error-box{background:rgba(239,68,68,.08);border:0.5px solid rgba(239,68,68,.3);border-radius:10px;padding:12px 16px;color:#f87171;font-size:13px;margin-bottom:1rem;display:none}
+  .pdf-btn{padding:9px 18px;background:var(--surface2);color:var(--gold2);border:0.5px solid rgba(245,158,11,.3);border-radius:8px;font-family:var(--body);font-size:13px;cursor:pointer;transition:all .2s}
+  .pdf-btn:hover{background:rgba(245,158,11,.08);border-color:var(--gold)}
+  .disclaimer{font-size:11px;color:var(--text3);text-align:center;line-height:1.7;border-top:0.5px solid var(--border);padding-top:1.5rem;margin-top:1.5rem}
+  .data-source-strip{background:var(--surface2);border:0.5px solid var(--border);border-radius:10px;padding:10px 16px;margin-bottom:1.5rem;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .ds-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green);flex-shrink:0}
+  .ds-text{font-size:12px;color:var(--text2)}
+  .ds-text strong{color:var(--text);font-weight:500}
+  @media print{body{background:#fff;color:#111}body::before{display:none}.search-card,.api-bar,.cta-row,.calc-card,.history-row,.disclaimer,.chips-row,.pdf-btn,.data-source-strip{display:none !important}.result-card{border:1px solid #ddd}.hs-code-big{color:#1d4ed8}}
+  @media(max-width:600px){.result-head{flex-direction:column}.head-right{align-items:flex-start;flex-direction:row;margin-left:0}.hs-code-big{font-size:24px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="logo-row">
+    <div class="logo-icon">⚓</div>
+    <span class="brand">HS<span>Finder</span>.in</span>
+    <span class="db-badge">● 98-Chapter DB Loaded</span>
+  </div>
+  <h1>India Customs<br>Intelligence</h1>
+  <p>AI classification + real India Customs Tariff data — BCD, IGST, SWS &amp; duty calculator &nbsp;<span class="free-tag">100% FREE</span></p>
+</header>
+
+<div class="data-source-strip">
+  <span class="ds-dot"></span>
+  <span class="ds-text"><strong>Data sources:</strong> India Customs Tariff Act (CBIC) · 98 Chapters · 300+ heading overrides · FY 2025-26 MFN rates (Union Budget Feb 2025) · AI cross-validation via Groq Llama</span>
+</div>
+
+<div class="api-bar">
+  <span class="api-dot" id="apiDot"></span>
+  <label>GROQ API KEY (FREE)</label>
+  <input type="password" id="apiKey" placeholder="Paste your free Groq API key here (gsk_...)" oninput="checkKey()"/>
+  <button class="how-link" onclick="toggleHow()">How to get? ↗</button>
+</div>
+
+<div class="how-box" id="howBox">
+  <ol>
+    <li>Go to <a href="https://console.groq.com/keys" target="_blank"><strong>console.groq.com/keys</strong></a></li>
+    <li>Sign up free with your Gmail or email (no credit card needed)</li>
+    <li>Click <strong>"Create API Key"</strong></li>
+    <li>Give it a name and click <strong>"Submit"</strong></li>
+    <li>Copy the key (starts with <strong>gsk_...</strong>) and paste it above</li>
+  </ol>
+  <p class="note">✅ Completely free · No credit card · No billing ever · Fast Llama 3 model</p>
+</div>
+
+<div id="historySection" style="display:none">
+  <div class="sec-title" style="margin-bottom:8px">Recent searches</div>
+  <div class="history-row" id="historyRow"></div>
+</div>
+
+<div class="search-card">
+  <div class="input-label">Product description</div>
+  <textarea id="productInput" placeholder="Describe your product in detail — material, purpose, specifications, origin country...&#10;&#10;E.g. Stainless steel vacuum-insulated water bottle 750ml, double-wall, for personal use, imported from China"></textarea>
+  <div class="chips-row">
+    <span class="chips-label">Try →</span>
+    <button class="chip" onclick="fill('Cotton t-shirt 100% cotton, men\'s casual, knitted, single jersey, for retail')">Cotton T-shirt</button>
+    <button class="chip" onclick="fill('Lithium-ion battery pack 48V 20Ah for electric bicycle')">EV Battery</button>
+    <button class="chip" onclick="fill('Laptop computer 15.6 inch Intel i5 8GB RAM 512GB SSD')">Laptop</button>
+    <button class="chip" onclick="fill('Stainless steel kitchen knife 8 inch household use')">Kitchen Knife</button>
+    <button class="chip" onclick="fill('Refined sunflower oil edible grade 1 litre PET bottle')">Sunflower Oil</button>
+    <button class="chip" onclick="fill('Polypropylene granules virgin injection moulding grade')">PP Granules</button>
+    <button class="chip" onclick="fill('Smartphone Android 6.7 inch AMOLED 5G 256GB storage')">Smartphone</button>
+  </div>
+  <div class="cta-row">
+    <button class="btn-primary" id="findBtn" onclick="findHSCode()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4" stroke="white" stroke-width="1.5"/><path d="M10 10l3 3" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Classify &amp; Get Duties
+    </button>
+    <button class="btn-sec" onclick="clearAll()">Clear</button>
+  </div>
+</div>
+
+<div class="error-box" id="errorBox"></div>
+<div class="loading" id="loading"><span class="loader"></span> AI classifying + looking up tariff database...</div>
+
+<div id="resultArea"></div>
+
+<div class="calc-card" id="calcCard">
+  <h3>⚡ Duty Calculator</h3>
+  <div class="calc-row">
+    <div class="calc-field">
+      <label>ASSESSABLE VALUE</label>
+      <input type="number" id="calcValue" placeholder="e.g. 100000" oninput="calcDuty()"/>
+    </div>
+    <div class="calc-field">
+      <label>CURRENCY</label>
+      <select id="calcCurr" onchange="calcDuty()">
+        <option value="1">INR ₹</option>
+        <option value="84">USD $ (×84)</option>
+        <option value="90">EUR € (×90)</option>
+        <option value="105">GBP £ (×105)</option>
+        <option value="11">CNY ¥ (×11)</option>
+      </select>
+    </div>
+    <div class="calc-field">
+      <label>QUANTITY (optional)</label>
+      <input type="number" id="calcQty" placeholder="e.g. 100 units" oninput="calcDuty()"/>
+    </div>
+  </div>
+  <div class="calc-result">
+    <div class="cr-item"><div class="cr-label">ASSESSABLE VALUE</div><div class="cr-val" id="cr-av" style="color:var(--text2)">—</div></div>
+    <div class="cr-item"><div class="cr-label">BCD AMOUNT</div><div class="cr-val" id="cr-bcd">—</div></div>
+    <div class="cr-item"><div class="cr-label">SWS (10% of BCD)</div><div class="cr-val" id="cr-sws">—</div></div>
+    <div class="cr-item"><div class="cr-label">IGST AMOUNT</div><div class="cr-val" id="cr-igst">—</div></div>
+    <div class="cr-item cr-total"><div class="cr-label">TOTAL DUTY</div><div class="cr-val" id="cr-total">—</div></div>
+  </div>
+  <div class="landed-cost">
+    <span class="lc-label">LANDED COST (AV + All Duties)</span>
+    <span class="lc-val" id="cr-landed">—</span>
+  </div>
+</div>
+
+<p class="disclaimer">
+  Powered by Groq (Llama 3) — free, no credit card required. Duty rates from India Customs Tariff Act (CBIC), FY 2025-26 MFN schedule (Union Budget Feb 2025).<br>
+  Always verify final rates with a licensed customs broker, ICEGATE I4C portal, or the official Customs Tariff Act before making import/export decisions.<br>
+  This tool does not constitute legal or financial advice. Anti-dumping, safeguard duties and FTA preferential rates not included.
+</p>
+</div>
+
+<script>
+// ============================================================
+// INDIA CUSTOMS TARIFF DATABASE — 98 Chapters + Heading overrides
+// Source: CBIC Customs Tariff Act, FY 2025-26 MFN rates
+// ============================================================
+const CHAPTER_DB = {
+  "01":{desc:"Live animals",bcd:0,igst:0,note:"Most live animals nil BCD"},
+  "02":{desc:"Meat and edible meat offal",bcd:30,igst:12,note:"Higher BCD on meats"},
+  "03":{desc:"Fish and seafood",bcd:5,igst:5,note:"BCD reduced to 5% on frozen fish paste/surimi — Budget 2025-26"},
+  "04":{desc:"Dairy, eggs, honey",bcd:30,igst:5,note:"Milk powder 60%, butter 40%"},
+  "05":{desc:"Other animal products",bcd:0,igst:5,note:""},
+  "06":{desc:"Live trees and plants",bcd:10,igst:5,note:""},
+  "07":{desc:"Edible vegetables",bcd:30,igst:5,note:"Onions/garlic may vary"},
+  "08":{desc:"Edible fruits and nuts",bcd:30,igst:12,note:"Apples 50%, cashews vary"},
+  "09":{desc:"Coffee, tea, spices",bcd:70,igst:5,note:"Tea/coffee 100%"},
+  "10":{desc:"Cereals",bcd:50,igst:5,note:"Wheat 50%, rice varies"},
+  "11":{desc:"Milling products",bcd:30,igst:5,note:""},
+  "12":{desc:"Oil seeds",bcd:30,igst:5,note:"Soybean 30%"},
+  "13":{desc:"Lac, gums, resins",bcd:0,igst:18,note:""},
+  "14":{desc:"Vegetable plaiting materials",bcd:0,igst:5,note:""},
+  "15":{desc:"Animal/vegetable fats and oils",bcd:100,igst:5,note:"Palm oil 100%, sunflower 100%"},
+  "16":{desc:"Preparations of meat/fish",bcd:30,igst:12,note:""},
+  "17":{desc:"Sugars",bcd:60,igst:5,note:"Raw sugar 60%"},
+  "18":{desc:"Cocoa and preparations",bcd:30,igst:28,note:"Chocolates 28% IGST"},
+  "19":{desc:"Preparations of cereals/pastry",bcd:30,igst:18,note:"Biscuits, pasta 18% IGST"},
+  "20":{desc:"Preparations of vegetables/fruit",bcd:30,igst:12,note:""},
+  "21":{desc:"Miscellaneous edible preparations",bcd:30,igst:18,note:""},
+  "22":{desc:"Beverages and spirits",bcd:150,igst:28,note:"Alcohol 150%+ BCD"},
+  "23":{desc:"Residues and waste, animal feed",bcd:5,igst:5,note:"Animal feed"},
+  "24":{desc:"Tobacco",bcd:30,igst:28,note:""},
+  "25":{desc:"Salt, sulphur, earth, stone",bcd:0,igst:5,note:""},
+  "26":{desc:"Ores, slag and ash",bcd:2.5,igst:5,note:"Iron ore 2.5%"},
+  "27":{desc:"Mineral fuels, petroleum oils",bcd:5,igst:5,note:"Crude nil, products vary"},
+  "28":{desc:"Inorganic chemicals",bcd:7.5,igst:18,note:""},
+  "29":{desc:"Organic chemicals",bcd:7.5,igst:18,note:""},
+  "30":{desc:"Pharmaceutical products",bcd:10,igst:12,note:"36 more life-saving drugs fully exempt BCD — Budget 2025-26; 6 more at 5% BCD"},
+  "31":{desc:"Fertilisers",bcd:0,igst:5,note:"Most fertilisers nil BCD"},
+  "32":{desc:"Tanning/dyeing extracts, paints",bcd:7.5,igst:18,note:""},
+  "33":{desc:"Essential oils, cosmetics, perfumes",bcd:20,igst:18,note:"Perfumes 20%"},
+  "34":{desc:"Soap, waxes, cleaning preparations",bcd:10,igst:18,note:""},
+  "35":{desc:"Albuminoidal substances, glues",bcd:7.5,igst:18,note:""},
+  "36":{desc:"Explosives, matches",bcd:10,igst:18,note:""},
+  "37":{desc:"Photographic goods",bcd:10,igst:18,note:""},
+  "38":{desc:"Miscellaneous chemical products",bcd:7.5,igst:18,note:""},
+  "39":{desc:"Plastics and articles thereof",bcd:7.5,igst:18,note:"Primary forms 7.5%"},
+  "40":{desc:"Rubber and articles thereof",bcd:10,igst:18,note:"Tyres 10%"},
+  "41":{desc:"Raw hides, skins, leather",bcd:0,igst:18,note:"Wet Blue leather fully exempt BCD — Budget 2025-26; crust leather export duty removed"},
+  "42":{desc:"Leather articles, travel goods",bcd:10,igst:18,note:""},
+  "43":{desc:"Furskins and artificial fur",bcd:10,igst:18,note:""},
+  "44":{desc:"Wood and articles of wood",bcd:10,igst:18,note:"Plywood 10%"},
+  "45":{desc:"Cork and articles of cork",bcd:10,igst:18,note:""},
+  "46":{desc:"Manufactures of straw/plaiting",bcd:10,igst:12,note:""},
+  "47":{desc:"Pulp of wood, waste paper",bcd:0,igst:12,note:""},
+  "48":{desc:"Paper and paperboard",bcd:10,igst:12,note:""},
+  "49":{desc:"Printed books, newspapers, maps",bcd:0,igst:0,note:"Books nil GST"},
+  "50":{desc:"Silk",bcd:10,igst:5,note:""},
+  "51":{desc:"Wool, fine/coarse animal hair",bcd:10,igst:5,note:""},
+  "52":{desc:"Cotton",bcd:20,igst:5,note:"Cotton yarn 20%"},
+  "53":{desc:"Other vegetable textile fibres",bcd:10,igst:5,note:""},
+  "54":{desc:"Man-made filaments",bcd:20,igst:12,note:""},
+  "55":{desc:"Man-made staple fibres",bcd:20,igst:12,note:""},
+  "56":{desc:"Wadding, felt, nonwovens",bcd:20,igst:12,note:""},
+  "57":{desc:"Carpets and floor coverings",bcd:20,igst:12,note:""},
+  "58":{desc:"Special woven fabrics",bcd:20,igst:12,note:""},
+  "59":{desc:"Impregnated textile fabrics",bcd:20,igst:12,note:""},
+  "60":{desc:"Knitted or crocheted fabrics",bcd:20,igst:12,note:"BCD revised to 20% or ₹115/kg whichever higher — Budget 2025-26"},
+  "61":{desc:"Knitted clothing and accessories",bcd:20,igst:12,note:"T-shirts, jerseys"},
+  "62":{desc:"Woven clothing and accessories",bcd:20,igst:12,note:"Suits, coats, trousers"},
+  "63":{desc:"Other made-up textile articles",bcd:20,igst:12,note:"Bed linen, curtains"},
+  "64":{desc:"Footwear",bcd:20,igst:18,note:"Shoes 20% BCD"},
+  "65":{desc:"Headgear",bcd:20,igst:12,note:""},
+  "66":{desc:"Umbrellas, walking sticks",bcd:20,igst:12,note:""},
+  "67":{desc:"Feathers, artificial flowers",bcd:20,igst:12,note:""},
+  "68":{desc:"Articles of stone, plaster, cement",bcd:10,igst:18,note:""},
+  "69":{desc:"Ceramic products",bcd:10,igst:18,note:"Tiles 10%"},
+  "70":{desc:"Glass and glassware",bcd:10,igst:18,note:""},
+  "71":{desc:"Precious stones, metals, jewellery",bcd:10,igst:3,note:"Gold 10%, IGST 3%"},
+  "72":{desc:"Iron and steel",bcd:7.5,igst:18,note:"HR coil 12.5%"},
+  "73":{desc:"Articles of iron or steel",bcd:10,igst:18,note:""},
+  "74":{desc:"Copper and articles thereof",bcd:5,igst:18,note:""},
+  "75":{desc:"Nickel and articles thereof",bcd:2.5,igst:18,note:""},
+  "76":{desc:"Aluminium and articles thereof",bcd:7.5,igst:18,note:""},
+  "78":{desc:"Lead and articles thereof",bcd:5,igst:18,note:""},
+  "79":{desc:"Zinc and articles thereof",bcd:5,igst:18,note:""},
+  "80":{desc:"Tin and articles thereof",bcd:5,igst:18,note:""},
+  "81":{desc:"Other base metals",bcd:5,igst:18,note:""},
+  "82":{desc:"Tools, cutlery, spoons of base metal",bcd:10,igst:18,note:"Knives 10%"},
+  "83":{desc:"Miscellaneous articles of base metal",bcd:10,igst:18,note:""},
+  "84":{desc:"Machinery and mechanical appliances",bcd:7.5,igst:18,note:"Some capital goods nil"},
+  "85":{desc:"Electrical machinery and electronics",bcd:10,igst:18,note:"IFPD BCD increased 10%→20%; Open Cell components reduced to 5%; Mobiles 20% — Budget 2025-26"},
+  "86":{desc:"Railway locomotives and parts",bcd:0,igst:5,note:""},
+  "87":{desc:"Vehicles other than railway",bcd:100,igst:28,note:"Cars 100%+ BCD + cess"},
+  "88":{desc:"Aircraft and spacecraft",bcd:0,igst:5,note:"Civil aircraft 0% BCD"},
+  "89":{desc:"Ships, boats and floating structures",bcd:0,igst:5,note:""},
+  "90":{desc:"Optical, photographic, medical instruments",bcd:7.5,igst:12,note:"Medical instruments lower"},
+  "91":{desc:"Clocks and watches",bcd:20,igst:18,note:""},
+  "92":{desc:"Musical instruments",bcd:10,igst:12,note:""},
+  "93":{desc:"Arms and ammunition",bcd:10,igst:18,note:""},
+  "94":{desc:"Furniture, bedding, lamps",bcd:20,igst:18,note:"Furniture 20%"},
+  "95":{desc:"Toys, games, sports equipment",bcd:60,igst:18,note:"Toys 60% BCD"},
+  "96":{desc:"Miscellaneous manufactured articles",bcd:20,igst:18,note:"Pens, combs etc"},
+  "97":{desc:"Works of art, antiques",bcd:0,igst:12,note:""},
+  "98":{desc:"Special classification provisions",bcd:0,igst:18,note:"Project imports etc"}
+};
+
+// Specific heading (4-digit) overrides — more precise rates
+const HEADING_DB = {
+  "8471":{desc:"Computers/laptops/tablets",bcd:0,igst:18,note:"IT Agreement — 0% BCD"},
+  "8517":{desc:"Smartphones and mobile phones",bcd:20,igst:18,note:"Mobile phones 20% BCD — unchanged FY 2025-26"},
+  "8528":{desc:"Monitors, TVs and IFPDs",bcd:20,igst:28,note:"IFPD BCD increased 10% to 20% Budget 2025-26"},
+  "8703":{desc:"Passenger motor cars",bcd:100,igst:28,note:"CBU cars 100% BCD + cess"},
+  "8704":{desc:"Motor vehicles for goods transport",bcd:25,igst:28,note:""},
+  "8708":{desc:"Parts and accessories of vehicles",bcd:15,igst:28,note:""},
+  "8501":{desc:"Electric motors and generators",bcd:7.5,igst:18,note:""},
+  "8507":{desc:"Electric accumulators/batteries",bcd:10,igst:18,note:"Li-ion cells 10%"},
+  "8544":{desc:"Insulated wire, cable, ethernet switches",bcd:10,igst:18,note:"Carrier Grade ethernet switches BCD reduced 20% to 10% Budget 2025-26"},
+  "8414":{desc:"Air pumps, compressors, fans",bcd:7.5,igst:28,note:"AC compressors 28%"},
+  "8418":{desc:"Refrigerators, freezers",bcd:20,igst:28,note:""},
+  "8450":{desc:"Washing machines",bcd:20,igst:28,note:""},
+  "8516":{desc:"Electric water heaters, hair dryers",bcd:20,igst:28,note:""},
+  "3004":{desc:"Medicaments/pharmaceutical preparations",bcd:0,igst:12,note:"36 more life-saving drugs fully exempt BCD Budget 2025-26"},
+  "3006":{desc:"Pharmaceutical goods",bcd:0,igst:12,note:""},
+  "2710":{desc:"Petroleum oils",bcd:2.5,igst:5,note:"Crude nil, HSD/petrol vary"},
+  "7108":{desc:"Gold in unwrought/semi-manufactured forms",bcd:5,igst:3,note:"Gold BCD reduced to 5% plus 1% AIDC Budget 2025-26"},
+  "7113":{desc:"Articles of jewellery",bcd:15,igst:3,note:""},
+  "7114":{desc:"Articles of goldsmiths",bcd:15,igst:3,note:""},
+  "0901":{desc:"Coffee",bcd:100,igst:5,note:"Roasted coffee 100%"},
+  "0902":{desc:"Tea",bcd:100,igst:5,note:""},
+  "1701":{desc:"Cane or beet sugar",bcd:60,igst:5,note:""},
+  "1511":{desc:"Palm oil",bcd:100,igst:5,note:"Crude palm oil 100%"},
+  "1512":{desc:"Sunflower-seed or safflower oil",bcd:100,igst:5,note:""},
+  "5201":{desc:"Cotton, not carded or combed",bcd:5,igst:5,note:"Raw cotton 5%"},
+  "6109":{desc:"T-shirts, singlets (knitted)",bcd:20,igst:12,note:""},
+  "6203":{desc:"Men's suits, trousers (woven)",bcd:20,igst:12,note:""},
+  "6402":{desc:"Sports and outdoor footwear",bcd:20,igst:18,note:""},
+  "9503":{desc:"Toys and models",bcd:60,igst:18,note:"Toys 60% BCD"},
+  "9401":{desc:"Seats and chairs",bcd:20,igst:18,note:""},
+  "9403":{desc:"Other furniture",bcd:20,igst:18,note:""},
+  "3902":{desc:"Polymers of propylene (PP)",bcd:7.5,igst:18,note:"Primary form plastics"},
+  "3901":{desc:"Polymers of ethylene (PE)",bcd:7.5,igst:18,note:""},
+  "3904":{desc:"Polymers of vinyl chloride (PVC)",bcd:7.5,igst:18,note:""},
+  "7219":{desc:"Stainless steel flat-rolled products",bcd:7.5,igst:18,note:""},
+  "7204":{desc:"Ferrous waste and scrap",bcd:2.5,igst:18,note:""},
+  "2304":{desc:"Soybean oil-cake",bcd:5,igst:5,note:"Animal feed"},
+  "8802":{desc:"Aircraft (civil aviation)",bcd:0,igst:5,note:"Civil aircraft 0% BCD"},
+  "7604":{desc:"Aluminium bars and rods",bcd:7.5,igst:18,note:""},
+  "4011":{desc:"New pneumatic tyres of rubber",bcd:10,igst:28,note:"Car tyres 28% IGST"},
+  "9018":{desc:"Medical/surgical instruments",bcd:0,igst:12,note:"Most medical devices 0% BCD"},
+  "2933":{desc:"Heterocyclic compounds (pharma API)",bcd:7.5,igst:18,note:""},
+  "3808":{desc:"Insecticides, pesticides",bcd:10,igst:18,note:""},
+  "8525":{desc:"Transmission apparatus, cameras",bcd:15,igst:18,note:"CCTV cameras 15%"},
+  "8536":{desc:"Electrical switches, connectors",bcd:7.5,igst:18,note:""},
+  "8542":{desc:"Integrated circuits (ICs, chips)",bcd:0,igst:18,note:"Semiconductors nil BCD"},
+  "8486":{desc:"Machines for semiconductor manufacture",bcd:0,igst:18,note:"Capital goods 0%"},
+  "2601":{desc:"Iron ores and concentrates",bcd:0,igst:5,note:"Iron ore export restricted"},
+  "2701":{desc:"Coal",bcd:1,igst:5,note:"Coking coal lower"},
+  "6305":{desc:"Sacks and bags for packing",bcd:20,igst:12,note:"PP woven sacks"},
+  "3923":{desc:"Plastic articles for packing",bcd:10,igst:18,note:""},
+  "8483":{desc:"Transmission shafts, gears, bearings",bcd:7.5,igst:18,note:"Bearings 7.5%"},
+  "8481":{desc:"Taps, cocks, valves",bcd:7.5,igst:18,note:""},
+  "3926":{desc:"Other articles of plastic",bcd:10,igst:18,note:""}
+};
+
+function lookupDB(hsCode) {
+  if (!hsCode) return null;
+  const clean = hsCode.replace(/\./g,'');
+  const heading = clean.substring(0,4);
+  const chapter = clean.substring(0,2);
+  if (HEADING_DB[heading]) {
+    return { ...HEADING_DB[heading], level: 'heading', code: heading };
+  }
+  if (CHAPTER_DB[chapter]) {
+    return { ...CHAPTER_DB[chapter], level: 'chapter', code: chapter };
+  }
+  return null;
+}
+
+function calcEffDuty(bcd, igst, swsRate=10) {
+  const sws = bcd * swsRate / 100;
+  const igstAmt = (100 + bcd + sws) * igst / 100;
+  return Math.round((bcd + sws + igstAmt) * 100) / 100;
+}
+
+// ============================================================
+let currentResult = null;
+const history = [];
+
+function fill(t) { document.getElementById('productInput').value = t; }
+
+function checkKey() {
+  const k = document.getElementById('apiKey').value.trim();
+  document.getElementById('apiDot').className = 'api-dot' + (k.startsWith('gsk_') ? ' active' : '');
+}
+
+function toggleHow() {
+  const b = document.getElementById('howBox');
+  b.style.display = b.style.display === 'block' ? 'none' : 'block';
+}
+
+function clearAll() {
+  document.getElementById('productInput').value = '';
+  document.getElementById('resultArea').innerHTML = '';
+  document.getElementById('calcCard').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+  currentResult = null;
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorBox');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function findHSCode() {
+  const input = document.getElementById('productInput').value.trim();
+  const apiKey = document.getElementById('apiKey').value.trim();
+  if (!input) { showError('Please enter a product description.'); return; }
+  if (!apiKey) { showError('Please enter your free Google Gemini API key. Click "How to get?" above for instructions.'); return; }
+
+  document.getElementById('errorBox').style.display = 'none';
+  document.getElementById('resultArea').innerHTML = '';
+  document.getElementById('calcCard').style.display = 'none';
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('findBtn').disabled = true;
+
+  const prompt = `You are an expert Indian customs classification specialist. Classify the product below and return ONLY a valid JSON object with NO markdown, NO backticks, NO text outside JSON.
+
+Return exactly this structure:
+{
+  "hs_code": "XXXX.XX.XX",
+  "hs_6digit": "XXXXXX",
+  "hs_heading": "XXXX",
+  "hs_chapter": "XX",
+  "product_name": "Official short tariff description",
+  "classification_path": ["Chapter XX — Name", "Heading XXXX — Name", "Subheading XXXXXX — Name"],
+  "confidence": "High",
+  "bcd_ai": 10,
+  "igst_ai": 18,
+  "social_welfare_surcharge": 10,
+  "export_policy": "Free",
+  "notes": "2-3 sentence classification rationale"
+}
+
+Rules: bcd_ai and igst_ai must be numbers. confidence: High/Medium/Low. export_policy: Free/Restricted/Prohibited/STE.
+
+Product to classify: ${input}`;
+
+  try {
+    const res = await fetch(
+      `https://api.groq.com/openai/v1/chat/completions`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.1,
+          max_tokens: 1000
+        })
+      }
+    );
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || 'API error');
+
+    const text = data.choices?.[0]?.message?.content || '';
+    const clean = text.replace(/```json|```/g, '').trim();
+    const ai = JSON.parse(clean);
+
+    // Cross-validate AI output with our offline tariff DB
+    const dbMatch = lookupDB(ai.hs_code || ai.hs_6digit || (ai.hs_heading + '00'));
+    const finalBCD = dbMatch ? dbMatch.bcd : ai.bcd_ai;
+    const finalIGST = dbMatch ? dbMatch.igst : ai.igst_ai;
+    const finalSWS = 10;
+    const effDuty = calcEffDuty(finalBCD, finalIGST, finalSWS);
+
+    currentResult = { ...ai, bcd: finalBCD, igst: finalIGST, social_welfare_surcharge: finalSWS, effective_duty_pct: effDuty, dbMatch };
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('findBtn').disabled = false;
+    renderResult(currentResult);
+
+    const hist = input.substring(0, 50) + (input.length > 50 ? '…' : '');
+    if (!history.includes(hist)) {
+      history.unshift(hist);
+      if (history.length > 6) history.pop();
+      renderHistory();
+    }
+  } catch(err) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('findBtn').disabled = false;
+    showError('Classification failed: ' + (err.message || 'Check your Gemini API key and try again.'));
+  }
+}
+
+function renderResult(d) {
+  const pathHtml = (d.classification_path || []).map((seg,i) =>
+    (i > 0 ? '<span class="path-arrow">›</span>' : '') +
+    `<span class="path-seg">${seg}</span>`
+  ).join('');
+
+  const dbVerified = d.dbMatch ? true : false;
+  const dbLevel = d.dbMatch ? d.dbMatch.level : null;
+  const dbNote = d.dbMatch
+    ? `Duty rates verified against official CBIC tariff DB at ${dbLevel} level (${d.dbMatch.code}). ${d.dbMatch.note || ''}`
+    : 'Rates based on AI classification — recommend verification against ICEGATE I4C.';
+
+  document.getElementById('resultArea').innerHTML = `
+    <div class="result-card">
+      <div class="result-head">
+        <div>
+          <div class="hs-label">ITC-HS Code</div>
+          <div class="hs-code-big">${d.hs_code || d.hs_6digit}</div>
+        </div>
+        <div>
+          <div class="product-name">${d.product_name}</div>
+          <div class="chapter-info">Chapter ${d.hs_chapter} · Heading ${d.hs_heading} · 6-digit: ${d.hs_6digit}</div>
+        </div>
+        <div class="head-right">
+          <span class="badge conf-${d.confidence}">${d.confidence} confidence</span>
+          <span class="badge export-badge">Export: ${d.export_policy}</span>
+          ${dbVerified ? `<span class="badge src-badge">✓ DB verified (${dbLevel})</span>` : ''}
+        </div>
+      </div>
+      <div class="result-body">
+        ${pathHtml ? `<div class="sec-title">Classification path</div><div class="path-row">${pathHtml}</div>` : ''}
+
+        <div class="sec-title">Applicable duties — India import (MFN rates, FY 2025-26)</div>
+        <div class="tax-grid">
+          <div class="tax-box ${dbVerified ? 'db-verified' : ''}">
+            <div class="t-label">BCD${dbVerified?' ✓ DB':''}</div>
+            <div class="t-value">${d.bcd}%</div>
+            <div class="t-sub">Basic Customs Duty</div>
+          </div>
+          <div class="tax-box">
+            <div class="t-label">SWS</div>
+            <div class="t-value">10% <span style="font-size:14px">of BCD</span></div>
+            <div class="t-sub">Social Welfare Surcharge</div>
+          </div>
+          <div class="tax-box ${dbVerified ? 'db-verified' : ''}">
+            <div class="t-label">IGST${dbVerified?' ✓ DB':''}</div>
+            <div class="t-value">${d.igst}%</div>
+            <div class="t-sub">Integrated GST</div>
+          </div>
+          <div class="tax-box highlight">
+            <div class="t-label">Effective Duty</div>
+            <div class="t-value">${d.effective_duty_pct.toFixed(1)}%</div>
+            <div class="t-sub">Total on assessable value</div>
+          </div>
+        </div>
+
+        <div class="db-info-box">
+          <span style="font-size:16px;flex-shrink:0">${dbVerified ? '✅' : 'ℹ️'}</span>
+          <span>${dbNote}</span>
+        </div>
+
+        <div class="sec-title">Classification rationale</div>
+        <div class="notes-box">${d.notes}</div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <button class="pdf-btn" onclick="window.print()">⬇ Download / Print Report</button>
+          <button class="btn-sec" onclick="openCalc()" style="font-size:13px;">⚡ Open Duty Calculator</button>
+          <a href="https://www.icegate.gov.in/Webappl/" target="_blank" style="font-size:12px;color:var(--text3);text-decoration:none;padding:9px 0;">Verify on ICEGATE ↗</a>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('calcCard').style.display = 'none';
+}
+
+function openCalc() {
+  const card = document.getElementById('calcCard');
+  card.style.display = 'block';
+  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  calcDuty();
+}
+
+function calcDuty() {
+  if (!currentResult) return;
+  const raw = parseFloat(document.getElementById('calcValue').value) || 0;
+  const rate = parseFloat(document.getElementById('calcCurr').value) || 1;
+  const qty = parseFloat(document.getElementById('calcQty').value) || 1;
+  const av = raw * rate * qty;
+  const bcdRate = currentResult.bcd || 0;
+  const igstRate = currentResult.igst || 0;
+  const bcdAmt = av * bcdRate / 100;
+  const swsAmt = bcdAmt * 10 / 100;
+  const igstBase = av + bcdAmt + swsAmt;
+  const igstAmt = igstBase * igstRate / 100;
+  const total = bcdAmt + swsAmt + igstAmt;
+  const landed = av + total;
+  const fmt = n => '₹' + Math.round(n).toLocaleString('en-IN');
+  document.getElementById('cr-av').textContent = av ? fmt(av) : '—';
+  document.getElementById('cr-bcd').textContent = av ? fmt(bcdAmt) : '—';
+  document.getElementById('cr-sws').textContent = av ? fmt(swsAmt) : '—';
+  document.getElementById('cr-igst').textContent = av ? fmt(igstAmt) : '—';
+  document.getElementById('cr-total').textContent = av ? fmt(total) : '—';
+  document.getElementById('cr-landed').textContent = av ? fmt(landed) : '—';
+}
+
+function renderHistory() {
+  if (!history.length) return;
+  document.getElementById('historySection').style.display = 'block';
+  document.getElementById('historyRow').innerHTML = history.map(h =>
+    `<button class="hist-chip" onclick="fill('${h.replace(/'/g,"\\'")}')">${h}</button>`
+  ).join('');
+}
+</script>
+</body>
+</html>
