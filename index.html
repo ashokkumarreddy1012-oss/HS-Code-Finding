@@ -142,7 +142,7 @@
 <div class="api-bar">
   <span class="api-dot" id="apiDot"></span>
   <label>GROQ API KEY (FREE)</label>
-  <input type="password" id="apiKey" placeholder="Paste your free Groq API key here (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)" oninput="checkKey(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)"/>
+  <input type="password" id="apiKey" placeholder="API key loaded automatically" oninput="checkKey()"/>
   <button class="how-link" onclick="toggleHow()">How to get? ↗</button>
 </div>
 
@@ -421,6 +421,10 @@ const history = [];
 function fill(t) { document.getElementById('productInput').value = t; }
 
 function checkKey() {
+  // Auto-load hardcoded key if field is empty
+  if (!document.getElementById('apiKey').value) {
+    document.getElementById('apiKey').value = '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';
+  }
   const k = document.getElementById('apiKey').value.trim();
   document.getElementById('apiDot').className = 'api-dot' + (k.startsWith('gsk_') ? ' active' : '');
 }
@@ -448,7 +452,7 @@ async function findHSCode() {
   const input = document.getElementById('productInput').value.trim();
   const apiKey = document.getElementById('apiKey').value.trim();
   if (!input) { showError('Please enter a product description.'); return; }
-  if (!apiKey) { showError('Please enter your free Google Gemini API key. Click "How to get?" above for instructions.'); return; }
+  if (!apiKey) { showError('API key missing. Please refresh the page.'); return; }
 
   document.getElementById('errorBox').style.display = 'none';
   document.getElementById('resultArea').innerHTML = '';
@@ -640,6 +644,12 @@ function renderHistory() {
     `<button class="hist-chip" onclick="fill('${h.replace(/'/g,"\\'")}')">${h}</button>`
   ).join('');
 }
+</script>
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('apiKey').value = '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';
+  document.getElementById('apiDot').className = 'api-dot active';
+});
 </script>
 </body>
 </html>
